@@ -93,7 +93,7 @@ export const content = {
       whatsappNumber: '+34 618 07 75 68'
     },
     footer: {
-      rights: '© 2024 Velve Produce. Todos los derechos reservados.'
+      rights: '© 2026 Velve Produce. Todos los derechos reservados.'
     }
   },
   en: {
@@ -188,7 +188,7 @@ export const content = {
       whatsappNumber: '+34 618 07 75 68'
     },
     footer: {
-      rights: '© 2024 Velve Produce. All rights reserved.'
+      rights: '© 2026 Velve Produce. All rights reserved.'
     }
   }
 };

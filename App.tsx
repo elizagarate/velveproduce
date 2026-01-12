@@ -195,15 +195,18 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
   const t = content[lang].contactPage;
   const c = content[lang].contact;
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // EmailJS Configuration (To be filled by the client)
-  const EMAILJS_SERVICE_ID = 'service_0awikrb'; 
-  const EMAILJS_TEMPLATE_ID = 'template_uao8ddq';
-  const EMAILJS_PUBLIC_KEY = 'Q58TNQCchFLq3tOBW';
+  // EmailJS Configuration - Hardcoded or environment variables
+  // Se aplica .trim() para evitar errores de espacios invisibles al copiar/pegar
+  const EMAILJS_SERVICE_ID = 'service_0awikrb'.trim(); 
+  const EMAILJS_TEMPLATE_ID = 'template_4vtkno5'.trim();
+  const EMAILJS_PUBLIC_KEY = 'Q58TNQCchFLq3tOBW'.trim();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormStatus('sending');
+    setErrorMessage(null);
 
     const formData = new FormData(e.currentTarget);
     const data = {
@@ -220,30 +223,31 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
     };
 
     try {
-      // Direct fetch to EmailJS REST API
       const response = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
 
+      const responseText = await response.text();
+
       if (response.ok) {
         setFormStatus('success');
-        // Reset form after success is handled by re-rendering to 'idle' if needed
       } else {
-        throw new Error('Failed to send email via SMTP Bridge');
+        console.error('Detailed EmailJS Error:', responseText);
+        setErrorMessage(responseText);
+        setFormStatus('error');
       }
     } catch (error) {
-      console.error('Email sending error:', error);
+      console.error('Network Error:', error);
+      setErrorMessage('Network connection error');
       setFormStatus('error');
-      setTimeout(() => setFormStatus('idle'), 5000);
     }
   };
 
   return (
     <div className="pt-40 bg-white relative overflow-hidden animate-fade-in">
       <div className="container mx-auto px-6 max-w-6xl relative">
-        {/* Decorative Berry Drawing */}
         <div className="fixed top-0 right-0 pt-[50px] w-64 md:w-[450px] opacity-40 pointer-events-none select-none z-0">
           <img 
             src="https://github.com/elizagarate/images/blob/main/velveproduce/nutritionist-26-1.png?raw=true" 
@@ -266,7 +270,6 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
           </div>
 
           <div className="grid lg:grid-cols-12 gap-16 items-start mb-24">
-            {/* Contact Info Items */}
             <div className="lg:col-span-4 space-y-12">
               <a href="mailto:exports@velveproduce.com" className="flex items-center gap-6 group">
                 <div className="w-16 h-16 bg-[#FDBA74] rounded-full flex items-center justify-center shrink-0 shadow-lg shadow-orange-100 group-hover:scale-105 transition-transform">
@@ -303,7 +306,6 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
               </div>
             </div>
 
-            {/* Form Card */}
             <div className="lg:col-span-8">
               <div className="bg-white rounded-[4rem] p-12 md:p-16 shadow-[0_40px_100px_rgba(0,0,0,0.05)] border border-gray-50">
                 {formStatus === 'success' ? (
@@ -319,11 +321,19 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
                 ) : (
                   <form onSubmit={handleSubmit} className="space-y-6">
                     {formStatus === 'error' && (
-                      <div className="bg-red-50 text-red-600 p-4 rounded-2xl flex items-center gap-3 animate-bounce">
-                        <AlertCircle className="w-5 h-5" />
-                        <span className="font-bold">
-                          {lang === 'es' ? 'Error al enviar. Intente de nuevo.' : 'Error sending. Please try again.'}
-                        </span>
+                      <div className="bg-red-50 text-red-600 p-6 rounded-3xl space-y-2 animate-pulse border border-red-100">
+                        <div className="flex items-center gap-3">
+                          <AlertCircle className="w-6 h-6 shrink-0" />
+                          <span className="font-extrabold">ERROR DE CONFIGURACIÓN</span>
+                        </div>
+                        <p className="text-sm opacity-80">
+                          {errorMessage?.includes('template ID not found') 
+                            ? (lang === 'es' 
+                                ? 'EmailJS no encuentra la plantilla. Verifique que la plantilla "template_uao8ddq" esté vinculada al servicio "service_0awikrb" en su panel.' 
+                                : 'Template ID not found. Verify your template is linked to the correct service.')
+                            : (lang === 'es' ? 'Error al enviar. Intente de nuevo.' : 'Error sending. Try again.')
+                          }
+                        </p>
                       </div>
                     )}
                     <div className="grid md:grid-cols-1 gap-6">
@@ -384,7 +394,6 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
         </div>
       </div>
 
-      {/* Google Maps Iframe Section */}
       <div className="w-full mt-12 animate-fade-in shadow-inner">
         <iframe 
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3169.9551662658846!2d-5.9982733593065225!3d37.390892534296064!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xd126c1027b32a89%3A0x347242ea763ee5ab!2sC.%20Rioja%2C%2013%2C%201%C2%BAC%2C%20Casco%20Antiguo%2C%2041001%20Sevilla!5e0!3m2!1ses!2ses!4v1768118138125!5m2!1ses!2ses" 
@@ -406,7 +415,6 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
 
   return (
     <>
-      {/* Hero Section */}
       <section id="home" className="min-h-screen hero-gradient flex items-center pt-20">
         <div className="container mx-auto px-6 text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-12">
           <div className="md:w-1/2">
@@ -449,7 +457,6 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      {/* Quick History Preview Section */}
       <section className="py-24 bg-white">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center gap-16">
@@ -472,7 +479,6 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      {/* Services Section */}
       <section id="services" className="py-24 berry-gradient">
         <div className="container mx-auto px-6">
           <SectionTitle title={t.services.title} subtitle={t.services.description} />
@@ -492,7 +498,6 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      {/* Products Section */}
       <section id="products" className="py-24 bg-white">
         <div className="container mx-auto px-6">
           <SectionTitle title={t.products.title} />
@@ -517,7 +522,6 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      {/* FAQ Section */}
       <section id="faq" className="py-24 bg-gray-50">
         <div className="container mx-auto px-6 max-w-4xl">
           <SectionTitle title={t.faq.title} />
@@ -537,7 +541,6 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      {/* Contact Info Preview Section */}
       <section id="contact-info" className="py-24 bg-white">
         <div className="container mx-auto px-6 max-w-4xl">
           <SectionTitle title={tc.title} />
@@ -586,7 +589,6 @@ const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('es');
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [activeSection, setActiveSection] = useState('home');
-  const [formStatus, setFormStatus] = useState<'idle' | 'success'>('idle');
   
   const t = content[lang];
 
@@ -618,7 +620,7 @@ const App: React.FC = () => {
 
       <main className="flex-grow">
         {currentPage === 'home' && (
-          <LandingPage lang={lang} formStatus={formStatus} setFormStatus={setFormStatus} />
+          <LandingPage lang={lang} formStatus="idle" setFormStatus={() => {}} />
         )}
         {currentPage === 'history' && (
           <HistoryPage lang={lang} setCurrentPage={setCurrentPage} />
@@ -628,7 +630,6 @@ const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
       <footer className="bg-white py-12 border-t mt-auto">
         <div className="container mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-2 mb-6">

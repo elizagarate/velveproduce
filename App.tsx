@@ -19,7 +19,7 @@ import {
   Loader2,
   AlertCircle
 } from 'lucide-react';
-import { content, Language } from './translations';
+import { content, Language } from './translations.ts';
 
 // --- Types ---
 type Page = 'home' | 'history' | 'contact';

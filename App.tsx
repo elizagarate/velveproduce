@@ -49,13 +49,11 @@ const Header: React.FC<NavProps> = ({ lang, setLang, currentPage, setCurrentPage
     if (section === 'home') {
       setCurrentPage('home');
       window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else if (section === 'history') {
-      setCurrentPage('history');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     } else if (section === 'contact') {
       setCurrentPage('contact');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
+      // Logic for scrolling to sections within the home page (history-roots, services, products)
       if (currentPage !== 'home') {
         setCurrentPage('home');
         setTimeout(() => {
@@ -72,7 +70,7 @@ const Header: React.FC<NavProps> = ({ lang, setLang, currentPage, setCurrentPage
   return (
     <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${isScrolled || currentPage !== 'home' ? 'bg-white/90 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'}`}>
       <div className="container mx-auto px-6 flex justify-between items-center">
-        <button onClick={() => setCurrentPage('home')} className="flex items-center space-x-2">
+        <button onClick={() => { setCurrentPage('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center space-x-2">
           <div className="w-10 h-10 bg-[#464196] rounded-full flex items-center justify-center">
             <Leaf className="text-white w-6 h-6" />
           </div>
@@ -83,7 +81,7 @@ const Header: React.FC<NavProps> = ({ lang, setLang, currentPage, setCurrentPage
           <a href="#" onClick={(e) => handleNavClick(e, 'home')} className={`hover:text-[#464196] transition-colors ${currentPage === 'home' && activeSection === 'home' ? 'text-[#464196] font-bold' : 'text-gray-600'}`}>
             {t.home}
           </a>
-          <a href="#" onClick={(e) => handleNavClick(e, 'history')} className={`hover:text-[#464196] transition-colors ${currentPage === 'history' ? 'text-[#464196] font-bold' : 'text-gray-600'}`}>
+          <a href="#" onClick={(e) => handleNavClick(e, 'history-roots')} className={`hover:text-[#464196] transition-colors ${currentPage === 'home' && activeSection === 'history-roots' ? 'text-[#464196] font-bold' : 'text-gray-600'}`}>
             {t.history}
           </a>
           <a href="#" onClick={(e) => handleNavClick(e, 'services')} className={`hover:text-[#464196] transition-colors ${currentPage === 'home' && activeSection === 'services' ? 'text-[#464196] font-bold' : 'text-gray-600'}`}>
@@ -197,8 +195,7 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
   const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // EmailJS Configuration - Hardcoded or environment variables
-  // Se aplica .trim() para evitar errores de espacios invisibles al copiar/pegar
+  // EmailJS Configuration
   const EMAILJS_SERVICE_ID = 'service_0awikrb'.trim(); 
   const EMAILJS_TEMPLATE_ID = 'template_4vtkno5'.trim();
   const EMAILJS_PUBLIC_KEY = 'Q58TNQCchFLq3tOBW'.trim();
@@ -329,8 +326,8 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
                         <p className="text-sm opacity-80">
                           {errorMessage?.includes('template ID not found') 
                             ? (lang === 'es' 
-                                ? 'EmailJS no encuentra la plantilla. Verifique que la plantilla "template_uao8ddq" esté vinculada al servicio "service_0awikrb" en su panel.' 
-                                : 'Template ID not found. Verify your template is linked to the correct service.')
+                                ? `EmailJS no encuentra la plantilla. Verifique que el ID "${EMAILJS_TEMPLATE_ID}" sea correcto en su panel.` 
+                                : `Template ID not found. Verify the ID "${EMAILJS_TEMPLATE_ID}" is correct.`)
                             : (lang === 'es' ? 'Error al enviar. Intente de nuevo.' : 'Error sending. Try again.')
                           }
                         </p>
@@ -409,7 +406,7 @@ const ContactPage: React.FC<{ lang: Language }> = ({ lang }) => {
   );
 };
 
-const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'success') => void; formStatus: 'idle' | 'success' }> = ({ lang, setFormStatus, formStatus }) => {
+const LandingPage: React.FC<{ lang: Language; setCurrentPage: (page: Page) => void }> = ({ lang, setCurrentPage }) => {
   const t = content[lang];
   const tc = content[lang].contactPage;
 
@@ -428,11 +425,11 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
               {t.hero.subtitle}
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <a href="#products" className="bg-[#464196] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#0041C2] transition-all flex items-center justify-center gap-2 shadow-lg">
+              <a href="#products" onClick={(e) => { e.preventDefault(); document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' }); }} className="bg-[#464196] text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-[#0041C2] transition-all flex items-center justify-center gap-2 shadow-lg">
                 {t.hero.cta} <ArrowRight className="w-5 h-5" />
               </a>
-              <a href="#" onClick={(e) => { e.preventDefault(); document.getElementById('contact-info')?.scrollIntoView({ behavior: 'smooth' }); }} className="border-2 border-[#464196] text-[#464196] px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-50 transition-all flex items-center justify-center">
-                {t.nav.contact}
+              <a href="#contact-info" onClick={(e) => { e.preventDefault(); document.getElementById('contact-info')?.scrollIntoView({ behavior: 'smooth' }); }} className="border-2 border-[#464196] text-[#464196] px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-50 transition-all flex items-center justify-center">
+                {content[lang].nav.contact}
               </a>
             </div>
           </div>
@@ -457,7 +454,7 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      <section className="py-24 bg-white">
+      <section id="history-roots" className="py-24 bg-white scroll-mt-24">
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center gap-16">
             <div className="md:w-1/2 order-2 md:order-1">
@@ -472,14 +469,19 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
                 {t.history.text}
               </p>
               <div className="p-6 bg-[#fdf2f2] border-l-4 border-[#BB4A4D] rounded-r-2xl">
-                <p className="text-xl font-bold italic text-[#BB4A4D]">{t.history.highlight}</p>
+                <button 
+                  onClick={() => { setCurrentPage('history'); window.scrollTo(0, 0); }}
+                  className="text-xl font-bold italic text-[#BB4A4D] hover:underline transition-all text-left"
+                >
+                  {t.history.highlight}
+                </button>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="services" className="py-24 berry-gradient">
+      <section id="services" className="py-24 berry-gradient scroll-mt-24">
         <div className="container mx-auto px-6">
           <SectionTitle title={t.services.title} subtitle={t.services.description} />
           <div className="grid md:grid-cols-3 gap-8">
@@ -498,7 +500,7 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      <section id="products" className="py-24 bg-white">
+      <section id="products" className="py-24 bg-white scroll-mt-24">
         <div className="container mx-auto px-6">
           <SectionTitle title={t.products.title} />
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -522,7 +524,7 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      <section id="faq" className="py-24 bg-gray-50">
+      <section id="faq" className="py-24 bg-gray-50 scroll-mt-24">
         <div className="container mx-auto px-6 max-w-4xl">
           <SectionTitle title={t.faq.title} />
           <div className="space-y-4">
@@ -541,7 +543,7 @@ const LandingPage: React.FC<{ lang: Language; setFormStatus: (s: 'idle' | 'succe
         </div>
       </section>
 
-      <section id="contact-info" className="py-24 bg-white">
+      <section id="contact-info" className="py-24 bg-white scroll-mt-24">
         <div className="container mx-auto px-6 max-w-4xl">
           <SectionTitle title={tc.title} />
           <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-12">
@@ -604,6 +606,7 @@ const App: React.FC = () => {
       { threshold: 0.5 }
     );
     
+    // Observamos las secciones del home para resaltar el menú activo
     document.querySelectorAll('section').forEach((section) => observer.observe(section));
     return () => observer.disconnect();
   }, [currentPage]);
@@ -620,7 +623,7 @@ const App: React.FC = () => {
 
       <main className="flex-grow">
         {currentPage === 'home' && (
-          <LandingPage lang={lang} formStatus="idle" setFormStatus={() => {}} />
+          <LandingPage lang={lang} setCurrentPage={setCurrentPage} />
         )}
         {currentPage === 'history' && (
           <HistoryPage lang={lang} setCurrentPage={setCurrentPage} />
@@ -633,7 +636,7 @@ const App: React.FC = () => {
       <footer className="bg-white py-12 border-t mt-auto">
         <div className="container mx-auto px-6 text-center">
           <div className="flex items-center justify-center space-x-2 mb-6">
-            <button onClick={() => { setCurrentPage('home'); window.scrollTo(0, 0); }} className="flex items-center space-x-2">
+            <button onClick={() => { setCurrentPage('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center space-x-2">
               <div className="w-8 h-8 bg-[#464196] rounded-full flex items-center justify-center">
                 <Leaf className="text-white w-4 h-4" />
               </div>

@@ -1,3 +1,4 @@
+
 export type Language = 'es' | 'en';
 
 export const content = {
